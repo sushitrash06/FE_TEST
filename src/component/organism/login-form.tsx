@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Input from "../atom/input";
 import Button from "../atom/button";
+import { login } from "../../services";
 
 interface LoginFormInputs {
   username: string;
@@ -10,9 +11,9 @@ interface LoginFormInputs {
 }
 
 const LoginForm: React.FC = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -22,10 +23,10 @@ const LoginForm: React.FC = () => {
   const onSubmit = async (data: LoginFormInputs) => {
     setLoading(true);
     try {
-      console.log("Submitting data:", data);
-      const token = "mock-token"; // Simulate receiving a token from the API
+      const response = await login(data.username, data.password);
+      const token = response.token;
       localStorage.setItem("authToken", token);
-      navigate("/"); // Navigate to home on successful login
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
