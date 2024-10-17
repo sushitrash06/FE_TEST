@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import SidebarLinkGroup from "./sidebarLinkGroup";
 import { MdDashboard } from "react-icons/md";
@@ -12,75 +12,106 @@ import { TbReportAnalytics } from "react-icons/tb";
 
 interface SidebarProps {
   sidebarOpen: boolean;
-  setSidebarOpen: (arg: boolean) => void;
+  setSidebarOpen: (open: boolean) => void;
 }
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
-  const location = useLocation();
-  const { pathname } = location;
+const menuItems = [
+  {
+    label: "Dashboard",
+    icon: MdDashboard,
+    path: "/",
+    isActive: (pathname: string) =>
+      pathname === "/",
+  },
+  {
+    label: "Laporan Lain",
+    icon: TbReportAnalytics,
+    path: "#",
+    isActive: (pathname: string) => pathname.includes("/forms"),
+    subMenu: [
+      {
+        label: "Laporan Harian",
+        path: "report",
+      },
+    ],
+  },
+  {
+    label: "Master Gerbang",
+    icon: IoMdSettings,
+    path: "master-gerbang",
+    isActive: (pathname: string) => pathname.includes("tables"),
+  },
+];
 
-  const trigger = useRef<any>(null);
-  const sidebar = useRef<any>(null);
+const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
+  const { pathname } = useLocation();
 
-  const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const sidebarRef = useRef<HTMLElement | null>(null);
+
   const [sidebarExpanded, setSidebarExpanded] = useState(
-    storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
+    localStorage.getItem("sidebar-expanded") === "true"
   );
 
-  // close on click outside
-  useEffect(() => {
-    const clickHandler = ({ target }: MouseEvent) => {
-      if (!sidebar.current || !trigger.current) return;
+  const closeSidebarOnOutsideClick = useCallback(
+    ({ target }: MouseEvent) => {
       if (
-        !sidebarOpen ||
-        sidebar.current.contains(target) ||
-        trigger.current.contains(target)
-      )
-        return;
-      setSidebarOpen(false);
-    };
-    document.addEventListener("click", clickHandler);
-    return () => document.removeEventListener("click", clickHandler);
-  });
+        sidebarOpen &&
+        sidebarRef.current &&
+        triggerRef.current &&
+        !sidebarRef.current.contains(target as Node) &&
+        !triggerRef.current.contains(target as Node)
+      ) {
+        setSidebarOpen(false);
+      }
+    },
+    [sidebarOpen, setSidebarOpen]
+  );
 
-  // close if the esc key is pressed
-  useEffect(() => {
-    const keyHandler = ({ keyCode }: KeyboardEvent) => {
-      if (!sidebarOpen || keyCode !== 27) return;
-      setSidebarOpen(false);
-    };
-    document.addEventListener("keydown", keyHandler);
-    return () => document.removeEventListener("keydown", keyHandler);
-  });
+  const closeSidebarOnEscapeKey = useCallback(
+    ({ key }: KeyboardEvent) => {
+      if (sidebarOpen && key === "Escape") {
+        setSidebarOpen(false);
+      }
+    },
+    [sidebarOpen, setSidebarOpen]
+  );
 
   useEffect(() => {
-    localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
-    if (sidebarExpanded) {
-      document.querySelector("body")?.classList.add("sidebar-expanded");
-    } else {
-      document.querySelector("body")?.classList.remove("sidebar-expanded");
-    }
+    document.addEventListener("click", closeSidebarOnOutsideClick);
+    document.addEventListener("keydown", closeSidebarOnEscapeKey);
+
+    return () => {
+      document.removeEventListener("click", closeSidebarOnOutsideClick);
+      document.removeEventListener("keydown", closeSidebarOnEscapeKey);
+    };
+  }, [closeSidebarOnOutsideClick, closeSidebarOnEscapeKey]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar-expanded", String(sidebarExpanded));
+    document.body.classList.toggle("sidebar-expanded", sidebarExpanded);
   }, [sidebarExpanded]);
 
   return (
     <aside
-      ref={sidebar}
+      ref={sidebarRef}
       className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-[#E4E9F2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      {/* <!-- SIDEBAR HEADER --> */}
-      <div className="flex text- text-[#001429]  items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
+      {/* Sidebar Header */}
+      <div className="flex text-[#001429] items-center justify-between gap-2 py-5.5 lg:py-6.5">
         <NavLink to="/">
           <img
-            className="max-w-[200px]"
+            className="max-w-[200px] mx-5"
             src={"/assets/images/Jasa_Marga_logo.webp"}
             alt="logo"
           />
         </NavLink>
 
+        {/* Sidebar toggle button (for mobile view) */}
         <button
-          ref={trigger}
+          ref={triggerRef}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls="sidebar"
           aria-expanded={sidebarOpen}
@@ -89,88 +120,78 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <IoMdMenu />
         </button>
       </div>
+
+      {/* Sidebar Navigation */}
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
-          <div>
-            <ul className="mb-6 flex flex-col gap-1.5">
-              <NavLink
-                to="#"
-                className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-[#001429] duration-300 ease-in-out  ${
-                  (pathname === "/" || pathname.includes("dashboard")) &&
-                  "bg-white "
-                }`}
-              >
-                <MdDashboard />
-                Dashboard
-              </NavLink>
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/forms" || pathname.includes("forms")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex justify-between items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-[#001429] duration-300 ease-in-out ${
-                          (pathname === "/forms" ||
-                            pathname.includes("forms")) &&
-                          "bg-graydark dark:bg-meta-4"
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <div className="flex">
-                          <TbReportAnalytics
-                            className="text-title-md mr-2"
-                            style={{ marginLeft: "-5px" }}
-                          />
-                          <p> Laporan Lain</p>
+        <nav className="px-4 lg:mt-9 lg:px-6">
+          <ul className="mb-6 flex flex-col gap-1.5">
+            {menuItems.map((item, index) => (
+              <li key={index}>
+                {item.subMenu ? (
+                  <SidebarLinkGroup activeCondition={item.isActive(pathname)}>
+                    {(handleClick, open) => (
+                      <>
+                        <NavLink
+                          to={item.path}
+                          className={`group rounded-lg relative flex justify-between items-center gap-2.5 px-4 py-2 font-medium text-[#001429] duration-300 ease-in-out hover:bg-[#00458F] hover:text-whiten ${
+                            item.isActive(pathname)
+                              ? "bg-[#00458F] !text-blue-600"
+                              : ""
+                          }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded
+                              ? handleClick()
+                              : setSidebarExpanded(true);
+                          }}
+                        >
+                          <div className="flex items-center">
+                            <item.icon className="text-title-md mr-2" />
+                            <p>{item.label}</p>
+                          </div>
+                          {open ? <IoIosArrowUp /> : <IoIosArrowDown />}
+                        </NavLink>
+
+                        {/* Dropdown Menu */}
+                        <div
+                          className={`translate transform overflow-hidden ${
+                            !open && "hidden"
+                          }`}
+                        >
+                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            {item.subMenu.map((subItem, subIndex) => (
+                              <li key={subIndex}>
+                                <NavLink
+                                  to={subItem.path}
+                                  className={({ isActive }) =>
+                                    `group relative items-center rounded-lg font-medium text-[#001429] duration-300 ease-in-out hover:text-blue-900 ${
+                                      isActive ? "!text-whiten" : ""
+                                    }`
+                                  }
+                                >
+                                  {subItem.label}
+                                </NavLink>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        {open ? <IoIosArrowUp /> : <IoIosArrowDown />}
-                      </NavLink>
-                      {/* <!-- Dropdown Menu Start --> */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && "hidden"
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/forms/form-elements"
-                              className={({ isActive }) =>
-                                "group relative items-center  rounded-sm font-medium text-[#001429] duration-300 ease-in-out" +
-                                (isActive && "!text-white")
-                              }
-                            >
-                              Laporan Harian
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-              <li>
-                <NavLink
-                  to="/tables"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-[#001429] duration-300 ease-in-out ${
-                    pathname.includes("tables") && "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <IoMdSettings />
-                  Master Gerbang
-                </NavLink>
+                      </>
+                    )}
+                  </SidebarLinkGroup>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    className={`group rounded-lg relative flex items-center gap-2.5 px-4 py-2 font-medium text-[#001429] duration-300 ease-in-out hover:bg-[#00458F] hover:text-white ${
+                      item.isActive(pathname) ? "bg-[#00458F] text-whiten" : ""
+                    }`}
+                  >
+                    <item.icon />
+                    {item.label}
+                  </NavLink>
+                )}
               </li>
-            </ul>
-          </div>
+            ))}
+          </ul>
         </nav>
       </div>
     </aside>

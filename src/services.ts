@@ -1,24 +1,9 @@
 // src/utils/api.ts
 import axios, { AxiosRequestConfig } from "axios";
+import { Gerbang, lanlinResponse } from "./utils/types";
 
 const BASE_URL = "http://localhost:8080/api";
 
-interface Gerbang {
-  id: number;
-  IdCabang: number;
-  NamaGerbang: string;
-  NamaCabang: string;
-}
-
-interface Lalin {
-  // Define properties according to the Lalin response structure
-  // e.g., property1: type;
-}
-
-interface LoginResponse {
-  // Define properties according to the login response structure
-  // e.g., token: string;
-}
 
 const fetchApi = async <T>(
   url: string,
@@ -37,8 +22,8 @@ export const fetchGerbangs = async (): Promise<Gerbang[]> => {
   return await fetchApi<Gerbang[]>("/gerbangs");
 };
 
-export const fetchLalin = async (tanggal: string): Promise<any> => {
-  return await fetchApi<any>(`/lalins?tanggal=${tanggal}`);
+export const fetchLalin = async (tanggal: string): Promise<lanlinResponse> => {
+  return await fetchApi<lanlinResponse>(`/lalins?tanggal=${tanggal}`);
 };
 
 export const login = async (

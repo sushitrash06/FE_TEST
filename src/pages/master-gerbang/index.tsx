@@ -1,7 +1,11 @@
 import React from 'react';
 
 const MasterGerbang: React.FC = () => {
-    return <h1>Master Gerbang</h1>;
+    return (
+        <div className='bg-black'>
+            <h1>MASTER</h1>
+        </div>
+    )
 };
 
 export default MasterGerbang;
