@@ -13,6 +13,10 @@ export interface RowData {
   Shift: number;
   Golongan: number;
   eMandiri: number;
+  Tunai: number;
+  DinasOpr: number,
+  DinasMitra: number,
+  DinasKary: number,
   eBri: number;
   eBni: number;
   eBca: number;

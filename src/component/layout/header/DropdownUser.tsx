@@ -1,17 +1,23 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from './ClickOutside';
 import { FaRegUser } from 'react-icons/fa';
 import { IoIosArrowDown } from 'react-icons/io';
-import { jwtDecode } from 'jwt-decode';
 import { TokenPayload } from '../../../utils/types';
+import { jwtDecode } from 'jwt-decode';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const authToken = localStorage.getItem("authToken");
-  const decodedToken:TokenPayload = jwtDecode(authToken ?? '');
-    console.log(decodedToken, 'ini')
+  const decodedToken: TokenPayload = jwtDecode(authToken ?? '');
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken"); // Clear token
+    navigate("/login"); // Redirect to login page
+  };
+
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <Link
@@ -26,7 +32,7 @@ const DropdownUser = () => {
         </span>
 
         <span className="h-12 bg-slate-200 w-12 rounded-full">
-        <FaRegUser className='text-lg m-auto my-3' />
+          <FaRegUser className="text-lg m-auto my-3" />
         </span>
         <IoIosArrowDown />
       </Link>
@@ -63,7 +69,10 @@ const DropdownUser = () => {
               </Link>
             </li>
           </ul>
-          <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+          >
             <svg
               className="fill-current"
               width="22"

@@ -10,7 +10,6 @@ const paymentMethodData = filterByDateAndSumPayments(data);
 console.log(paymentMethodData)
   return (
     <div>
-      <h2>Traffic by Payment Method</h2>
       <PaymentMethodChart data={paymentMethodData ?? []} />
     </div>
   );

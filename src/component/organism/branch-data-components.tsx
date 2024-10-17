@@ -10,7 +10,6 @@ const BranchDataComponent: React.FC<BranchDataI> = ({data}) => {
   const branchData = filterByDateAndGroupByBranch(data);
   return (
     <div>
-      <h2>Traffic by Branch</h2>
       <BranchChart data={branchData ?? []} />
     </div>
   );

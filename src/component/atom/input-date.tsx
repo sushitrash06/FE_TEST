@@ -1,25 +1,25 @@
-// src/components/InputDate.tsx
-import React from 'react';
+import React from "react";
+import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
 
-interface InputDateProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    label?: string;
-    error?: string;
+interface CustomDatePickerProps {
+  initialValue: DateValueType;
+  onChange: (value: DateValueType) => void;
 }
 
-const InputDate: React.FC<InputDateProps> = ({ label, error, className, ...props }) => {
-    return (
-        <div className={`flex flex-col mb-4 ${className}`}>
-            {label && <label className="mb-1 text-sm font-medium">{label}</label>}
-            <input
-                type="date"
-                className={`border rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    error ? 'border-red-500' : 'border-gray-300'
-                }`}
-                {...props}
-            />
-            {error && <span className="mt-1 text-red-500 text-sm">{error}</span>}
-        </div>
-    );
+const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
+  initialValue,
+  onChange,
+}) => {
+  return (
+    <div className="border border-gray-400 rounded-md">
+      <Datepicker
+        useRange={false}
+        asSingle={true}
+        value={initialValue}
+        onChange={onChange}
+      />
+    </div>
+  );
 };
 
-export default InputDate;
+export default CustomDatePicker;

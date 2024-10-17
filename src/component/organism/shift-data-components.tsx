@@ -9,7 +9,6 @@ const ShiftDataComponent: React.FC<PaymentMethodI> = ({data}) => {
 const DataShift = filterByDateAndGroupByShift(data);
   return (
     <div>
-      <h2>Shift</h2>
       <ShiftChart data={DataShift ?? []} />
     </div>
   );

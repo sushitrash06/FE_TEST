@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface CardProps {
-  title: string;
+  title?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
@@ -9,7 +9,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ title, children, footer, className = '' }) => {
   return (
-    <div className={`bg-white shadow-md rounded-lg p-4 ${className}`}>
+    <div className={`bg-white max-h-75 shadow-md rounded-lg p-4 ${className}`}>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <div className="mb-4">
         {children}

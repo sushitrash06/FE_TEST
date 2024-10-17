@@ -1,91 +1,76 @@
-// src/components/DataTable.tsx
 import React, { useState } from 'react';
-import Pagination from '../atom/pagination';
 
-interface DataTableProps {
-    data: any[]; // Ganti dengan tipe data yang sesuai
-    columns: { header: string; accessor: string }[];
+interface Column<T> {
+  Header: string;
+  accessor: keyof T;
+  Cell?: (props: { row: T }) => React.ReactNode; // Custom cell rendering
 }
 
-const DataTable: React.FC<DataTableProps> = ({ data, columns }) => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage] = useState(5); // Ubah sesuai kebutuhan
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    const [filter, setFilter] = useState('');
+interface TableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  pageSize?: number;
+}
 
-    const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
-    };
+const Table = <T extends Record<string, any>>({ columns, data, pageSize = 5 }: TableProps<T>) => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const totalPages = Math.ceil(data.length / pageSize);
 
-    const filteredData = data.filter(item =>
-        columns.some(column =>
-            item[column.accessor].toString().toLowerCase().includes(filter.toLowerCase())
-        )
-    );
+  const handlePageChange = (page: number) => {
+    if (page >= 0 && page < totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
-    const sortedData = filteredData.sort((a, b) => {
-        if (!sortConfig) return 0;
-        const { key, direction } = sortConfig;
-        const result = a[key] < b[key] ? -1 : 1;
-        return direction === 'asc' ? result : -result;
-    });
+  const sortedData = data; // You can add sorting logic here based on your needs
 
-    const paginatedData = sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+  const paginatedData = sortedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
 
-    return (
-        <div className="w-full max-w-3xl mx-auto">
-            <div className="flex justify-between mb-4">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="border rounded p-2"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                />
-            </div>
-            <table className="min-w-full border border-gray-300">
-                <thead>
-                    <tr>
-                        {columns.map((column) => (
-                            <th key={column.accessor} className="border px-4 py-2 cursor-pointer" onClick={() => handleSort(column.accessor)}>
-                                {column.header}
-                                {sortConfig && sortConfig.key === column.accessor ? (sortConfig.direction === 'asc' ? ' 🔼' : ' 🔽') : null}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {paginatedData.length > 0 ? (
-                        paginatedData.map((item, index) => (
-                            <tr key={index} className="border-b">
-                                {columns.map((column) => (
-                                    <td key={column.accessor} className="border px-4 py-2">
-                                        {item[column.accessor]}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan={columns.length} className="border px-4 py-2 text-center">
-                                No data found
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-            <Pagination 
-                currentPage={currentPage} 
-                totalPages={totalPages} 
-                onPageChange={setCurrentPage} 
-            />
-        </div>
-    );
+  return (
+    <div className="overflow-hidden border border-gray-200 rounded-lg shadow-md">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-100">
+          <tr>
+            {columns.map((column) => (
+              <th key={column.Header} className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                {column.Header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {paginatedData.map((row, index) => (
+            <tr key={index}>
+              {columns.map((column) => (
+                <td key={column.Header} className="px-4 py-2 text-sm text-gray-600">
+                  {column.Cell ? column.Cell({ row }) : row[column.accessor]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex justify-between items-center p-2">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 0}
+          className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage + 1} of {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages - 1}
+          className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
 };
 
-export default DataTable;
+export default Table;

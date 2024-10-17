@@ -9,8 +9,10 @@ export const filterByDateAndSumPayments = (rows: RowData[]) => {
       totals.BNI += row.eBni;
       totals.DKI += row.eDKI;
       totals.Mandiri += row.eMandiri;
-      totals.Flo += row.eFlo;
-      totals.KTP += 0; // Set ke 0 jika KTP tidak ada dalam data
+      totals.DinasKary += row.DinasKary;
+      totals.DinasMitra += row.DinasMitra;
+      totals.DinasOpr += row.DinasOpr;
+      totals.Tunai += row.Tunai;
       return totals;
     },
     {
@@ -19,8 +21,10 @@ export const filterByDateAndSumPayments = (rows: RowData[]) => {
       BNI: 0,
       DKI: 0,
       Mandiri: 0,
-      Flo: 0,
-      KTP: 0,
+      Tunai: 0,
+      DinasOpr: 0,
+      DinasMitra: 0,
+      DinasKary: 0,
     }
   );
 
@@ -41,7 +45,10 @@ export const filterByDateAndGroupByGate = (rows: RowData[]) => {
       row.eNobu +
       row.eDKI +
       row.eMega +
-      row.eFlo;
+      row.DinasKary +
+      row.DinasMitra +
+      row.DinasOpr +
+      row.Tunai
     return totals;
   }, {} as { [key: number]: number });
 
@@ -67,7 +74,10 @@ export const filterByDateAndGroupByBranch = (rows: RowData[]) => {
       row.eNobu +
       row.eDKI +
       row.eMega +
-      row.eFlo;
+      row.DinasKary +
+      row.DinasMitra +
+      row.DinasOpr +
+      row.Tunai
     return totals;
   }, {} as { [key: number]: number });
 
@@ -94,7 +104,10 @@ export const filterByDateAndGroupByShift = (rows: RowData[]) => {
         row.eNobu +
         row.eDKI +
         row.eMega +
-        row.eFlo;
+        row.DinasKary +
+        row.DinasMitra +
+        row.DinasOpr +
+        row.Tunai
       return totals;
     },
     { shift1: 0, shift2: 0, shift3: 0 }
