@@ -1,11 +1,13 @@
-import React from 'react';
+import React from "react";
+import TableMasterGate from "../../component/organism/gate-master-table";
 
 const MasterGerbang: React.FC = () => {
-    return (
-        <div className='bg-black'>
-            <h1>MASTER</h1>
-        </div>
-    )
+
+  return (
+    <div>
+      <TableMasterGate  />
+    </div>
+  );
 };
 
 export default MasterGerbang;

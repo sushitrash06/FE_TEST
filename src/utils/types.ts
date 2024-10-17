@@ -5,6 +5,14 @@ export interface TokenPayload {
   username: string;
 }
 
+export interface LoginResponse {
+  status: true;
+  message: string;
+  code: number;
+  is_logged_in: number;
+  token: string;
+}
+
 export interface RowData {
   id: number;
   IdCabang: number;
@@ -14,9 +22,9 @@ export interface RowData {
   Golongan: number;
   eMandiri: number;
   Tunai: number;
-  DinasOpr: number,
-  DinasMitra: number,
-  DinasKary: number,
+  DinasOpr: number;
+  DinasMitra: number;
+  DinasKary: number;
   eBri: number;
   eBni: number;
   eBca: number;
@@ -28,7 +36,12 @@ export interface RowData {
 
 export interface lanlinResponse {
   code: number;
-  data: { total_pages: 0; current_page: 1; count: 0; rows: {count: 0, rows: RowData[]} };
+  data: {
+    total_pages: 0;
+    current_page: 1;
+    count: 0;
+    rows: { count: 0; rows: RowData[] };
+  };
   message: string;
   status: boolean;
 }
@@ -40,4 +53,14 @@ export interface Gerbang {
   NamaCabang: string;
 }
 
-
+export interface GerbangResponse {
+  code: number;
+  data: {
+    total_pages: 0;
+    current_page: 1;
+    count: 0;
+    rows: { count: 0; rows: Gerbang[] };
+  };
+  message: string;
+  status: boolean;
+}

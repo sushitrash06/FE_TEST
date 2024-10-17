@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 
 interface Column<T> {
   Header: string;
-  accessor: keyof T;
-  Cell?: (props: { row: T }) => React.ReactNode; // Custom cell rendering
+  accessor?: keyof T;
+  Cell?: (props: { row: T }) => React.ReactNode; 
 }
 
 interface TableProps<T> {
@@ -43,7 +43,7 @@ const Table = <T extends Record<string, any>>({ columns, data, pageSize = 5 }: T
             <tr key={index}>
               {columns.map((column) => (
                 <td key={column.Header} className="px-4 py-2 text-sm text-gray-600">
-                  {column.Cell ? column.Cell({ row }) : row[column.accessor]}
+                  {column.Cell ? column.Cell({ row }) : row[column.accessor!]}
                 </td>
               ))}
             </tr>

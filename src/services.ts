@@ -1,43 +1,52 @@
-// src/utils/api.ts
-import axios, { AxiosRequestConfig } from "axios";
-import { Gerbang, lanlinResponse } from "./utils/types";
+import axios from "axios";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { GerbangResponse, LoginResponse, lanlinResponse } from "./utils/types";
 
 const BASE_URL = "http://localhost:8080/api";
 
-
-const fetchApi = async <T>(
-  url: string,
-  config?: AxiosRequestConfig
-): Promise<T> => {
-  try {
-    const response = await axios.get<T>(`${BASE_URL}${url}`, config);
-    return response.data;
-  } catch (error) {
-    console.error("API fetch error:", error);
-    throw error;
-  }
+export const fetchGerbangs = async (): Promise<GerbangResponse> => {
+  const response = await axios.get(`${BASE_URL}/gerbangs`);
+  return response.data;
 };
 
-export const fetchGerbangs = async (): Promise<Gerbang[]> => {
-  return await fetchApi<Gerbang[]>("/gerbangs");
+export const useGerbangs = () => {
+  return useQuery<GerbangResponse, Error>({
+    queryKey: ["gerbangs"],
+    queryFn: fetchGerbangs,
+  });
 };
 
 export const fetchLalin = async (tanggal: string): Promise<lanlinResponse> => {
-  return await fetchApi<lanlinResponse>(`/lalins?tanggal=${tanggal}`);
+  const response = await axios.get(`${BASE_URL}/lalins?tanggal=${tanggal}`, {});
+  return response.data;
 };
 
+export const useLalinData = (
+    tanggal: string
+) => {
+  return useQuery<lanlinResponse, Error>({
+    queryKey: ["pages", tanggal],
+    queryFn: () => fetchLalin(tanggal),
+  });
+};
+// Login Function
 export const login = async (
   username: string,
   password: string
-): Promise<any> => {
-  try {
-    const response = await axios.post<any>(`${BASE_URL}/auth/login`, {
-      username,
-      password,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Login error:", error);
-    throw error;
-  }
+): Promise<LoginResponse> => {
+  const response = await axios.post(`${BASE_URL}/auth/login`, {
+    username,
+    password,
+  });
+  return response.data;
+};
+
+export const useLogin = () => {
+  return useMutation<
+    LoginResponse,
+    Error,
+    { username: string; password: string }
+  >({
+    mutationFn: ({ username, password }) => login(username, password),
+  });
 };
