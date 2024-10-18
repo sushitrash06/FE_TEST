@@ -1,16 +1,18 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "@mui/material";
-import { DateValueType } from "react-tailwindcss-datepicker";
-import CustomDatePicker from "../../component/atom/input-date"; // Your custom date picker
 import { ToastContainer } from "react-toastify";
-import { useLalinData } from "../../services"; // Your custom hook for fetching data
 import { RowData } from "../../utils/types";
-
-
+import { DateValueType } from "react-tailwindcss-datepicker";
+import { useLalinData } from "../../services";
+import CustomDatePicker from "../atom/input-date";
 
 const ReportTable: React.FC = () => {
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<RowData | null>(null);
+
+  // Date state and selectedDate
   const [tanggal, setTanggal] = useState<DateValueType>({
     startDate: new Date("2023-11-01"),
     endDate: null,
@@ -20,17 +22,8 @@ const ReportTable: React.FC = () => {
     ? tanggal.startDate.toISOString().split("T")[0]
     : null;
 
+  // Fetch data based on selectedDate
   const { data: lalinData, isLoading, isError } = useLalinData(selectedDate ?? '');
-
-  const [openDetailModal, setOpenDetailModal] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<RowData | null>(null);
-
-  // Effect to handle data fetching based on date selection
-  useEffect(() => {
-    if (selectedDate) {
-      // Logic to fetch data can go here
-    }
-  }, [selectedDate]);
 
   const columns: GridColDef[] = [
     { field: "Tanggal", headerName: "Tanggal", width: 180 },
@@ -46,10 +39,7 @@ const ReportTable: React.FC = () => {
       headerName: "Actions",
       width: 150,
       renderCell: (params) => (
-        <Button
-          onClick={() => handleRowClick(params.row)}
-          variant="outlined"
-        >
+        <Button onClick={() => handleRowClick(params.row)} variant="outlined">
           Detail
         </Button>
       ),
@@ -76,22 +66,21 @@ const ReportTable: React.FC = () => {
     };
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error fetching data</div>;
+  const handleDateChange = (value: DateValueType) => {
+    setTanggal(value);
+  };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading data</p>;
 
   return (
     <div style={{ height: 600, width: "100%" }}>
-      {/* Date Picker */}
+      {/* Date Filter */}
       <div className="mb-4">
-        <CustomDatePicker initialValue={tanggal} onChange={setTanggal} />
+        <CustomDatePicker initialValue={tanggal} onChange={handleDateChange} />
       </div>
 
-      <DataGrid
-        rows={lalinData?.data?.rows?.rows || []} // Use the fetched rows directly
-        columns={columns}
-        pagination
-        autoPageSize
-      />
+      <DataGrid rows={lalinData?.data?.rows?.rows || []} columns={columns} pagination autoPageSize />
 
       {/* Detail Modal */}
       <Transition appear show={openDetailModal} as={Fragment}>

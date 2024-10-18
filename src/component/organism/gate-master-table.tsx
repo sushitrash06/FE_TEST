@@ -3,8 +3,10 @@ import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { IconButton, styled } from "@mui/material";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete, MdOutlineRemoveRedEye } from "react-icons/md";
-import { useGerbangs } from "../../services";
+import { useGerbangs, useDeleteGerbang } from "../../services"; // Ensure you import your custom hooks
 import { Dialog, Transition } from "@headlessui/react";
+import { toast } from "react-toastify"; // Import toast
+import GerbangForm from "./gerbang-form";
 
 const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
   '& .MuiDataGrid-columnHeaders': {
@@ -19,15 +21,18 @@ const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
 }));
 
 interface SearchI {
-    keyword: string
+  keyword: string;
 }
 
 const TableMasterGate: React.FC<SearchI> = ({ keyword }) => {
   const { data, isLoading, isError } = useGerbangs();
-  
+  const { mutate: deleteGerbang } = useDeleteGerbang(); // Use the delete hook
+
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDetailModalOpen, setDetailModalOpen] = useState(false);
+  const [isFormModalOpen, setFormModalOpen] = useState(false); // State for form modal
   const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [formData, setFormData] = useState<any>(null); // State to store form data
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 70 },
@@ -44,7 +49,7 @@ const TableMasterGate: React.FC<SearchI> = ({ keyword }) => {
           <IconButton onClick={() => handleView(params.row)} color="info">
             <MdOutlineRemoveRedEye />
           </IconButton>
-          <IconButton onClick={() => handleEdit(params.row.IdCabang)} color="primary">
+          <IconButton onClick={() => handleEdit(params.row)} color="primary">
             <FaEdit />
           </IconButton>
           <IconButton onClick={() => handleDelete(params.row)} color="secondary">
@@ -55,8 +60,9 @@ const TableMasterGate: React.FC<SearchI> = ({ keyword }) => {
     },
   ];
 
-  const handleEdit = (id: number) => {
-    console.log("Edit item with id:", id);
+  const handleEdit = (row: any) => {
+    setFormData(row); // Set form data with selected row
+    setFormModalOpen(true); // Open the form modal
   };
 
   const handleView = (row: any) => {
@@ -70,13 +76,21 @@ const TableMasterGate: React.FC<SearchI> = ({ keyword }) => {
   };
 
   const confirmDelete = () => {
-    console.log("Delete item with id:", selectedRow.IdCabang);
-    setDeleteModalOpen(false);
-    // Call your delete function here
+    if (selectedRow) {
+      deleteGerbang({ id: selectedRow.id, IdCabang: selectedRow.IdCabang }, {
+        onSuccess: () => {
+          toast.success("Item deleted successfully!"); // Show success toast
+          setDeleteModalOpen(false);
+          // Optionally, you might want to refetch or update your data here
+        },
+        onError: () => {
+          toast.error("Error deleting item."); // Show error toast if needed
+        },
+      });
+    }
   };
 
-  if (isLoading) return<svg className="animate-spin h-5 w-5 mr-3 ..." viewBox="0 0 24 24">
-</svg>;
+  if (isLoading) return <svg className="animate-spin h-5 w-5 mr-3 ..." viewBox="0 0 24 24"></svg>;
   if (isError) return <div>Error fetching data</div>;
 
   const filteredRows = data?.data?.rows?.rows.filter((row: any) => {
@@ -95,6 +109,15 @@ const TableMasterGate: React.FC<SearchI> = ({ keyword }) => {
         autoPageSize
         getRowId={(row) => row.IdCabang}
       />
+
+      {/* Gerbang Form Modal */}
+      {isFormModalOpen && (
+        <GerbangForm
+          show={isFormModalOpen}
+          setIsOpen={setFormModalOpen}
+          initialValues={formData} // Pass form data as initial values
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <Transition appear show={isDeleteModalOpen} as={Fragment}>

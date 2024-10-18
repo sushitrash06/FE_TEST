@@ -69,6 +69,15 @@ export const deleteGerbang = async (
   return response.data;
 };
 
+export const useDeleteGerbang = () => {
+    return useMutation<
+      ResponseInputGerbang,
+      Error,
+      { id: number; IdCabang: number }
+    >({
+      mutationFn: ({ id, IdCabang }) => deleteGerbang(id, IdCabang),
+    });
+  };
 
 export const useUpdateGerbang = () => {
   return useMutation<
@@ -81,15 +90,6 @@ export const useUpdateGerbang = () => {
   });
 };
 
-export const useDeleteGerbang = () => {
-  return useMutation<
-    ResponseInputGerbang,
-    Error,
-    { id: number; IdCabang: number }
-  >({
-    mutationFn: ({ id, IdCabang }) => deleteGerbang(id, IdCabang),
-  });
-};
 
 export const fetchLalin = async (tanggal: string): Promise<lanlinResponse> => {
   const response = await axios.get(`${BASE_URL}/lalins?tanggal=${tanggal}`, {});

@@ -6,7 +6,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useCreateGerbang, useGerbangs } from "../../services";
 import { toast } from "react-toastify";
 import { IoMdClose } from "react-icons/io";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 interface FormInputs {
   id: number;
@@ -18,14 +18,19 @@ interface FormInputs {
 interface TypeForm {
   show?: boolean | undefined;
   setIsOpen: (value: React.SetStateAction<boolean>) => void;
+  initialValues?: FormInputs; // Add initialValues prop
 }
 
-const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen }) => {
+const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen, initialValues }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormInputs>();
+    reset, // Added to reset the form
+  } = useForm<FormInputs>({
+    defaultValues: initialValues || { id: 0, IdCabang: 0, NamaGerbang: "", NamaCabang: "" }, // Set default values
+  });
+
   const { mutate, isPending } = useCreateGerbang();
   const { refetch } = useGerbangs();
 
@@ -38,6 +43,7 @@ const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen }) => {
         });
         refetch();
         setIsOpen(false);
+        reset(); // Reset form after successful submission
       },
       onError: (error) => {
         toast.error(`ERROR: ${error.message || "An error occurred"}`, {

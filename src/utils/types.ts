@@ -35,6 +35,7 @@ export interface RowData {
   Shift: number;
   Golongan: number;
   eMandiri: number;
+  IdAsalGerbang: number;
   IdGardu: number;
   Tunai: number;
   DinasOpr: number;
@@ -47,6 +48,11 @@ export interface RowData {
   eDKI: number;
   eMega: number;
   eFlo: number;
+  "Gol I"?: number;
+  "Gol II"?: number;
+  "Gol III"?: number;
+  "Gol IV"?: number;
+  "Gol V"?: number;
 }
 
 export interface lanlinResponse {
