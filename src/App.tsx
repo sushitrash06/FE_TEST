@@ -6,6 +6,8 @@ import MasterGerbang from "./pages/master-gerbang";
 import Report from "./pages/report";
 import PrivateRoute from "./protectedRoute";
 import DefaultLayout from "./component/layout";
+import "react-toastify/dist/ReactToastify.css"; // Import the toastify CSS
+
 
 const App: React.FC = () => {
   return (

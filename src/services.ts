@@ -1,6 +1,11 @@
 import axios from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { GerbangResponse, LoginResponse, lanlinResponse } from "./utils/types";
+import {
+  GerbangResponse,
+  LoginResponse,
+  ResponseInputGerbang,
+  lanlinResponse,
+} from "./utils/types";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -16,14 +21,82 @@ export const useGerbangs = () => {
   });
 };
 
+export const createGerbang = async (
+    id: number,
+    IdCabang: number,
+    NamaGerbang: string,
+    NamaCabang: string
+  ): Promise<ResponseInputGerbang> => {
+    const response = await axios.post(`${BASE_URL}/gerbangs`, {
+      id,
+      IdCabang,
+      NamaCabang,
+      NamaGerbang,
+    });
+    return response.data;
+  };
+  
+  export const useCreateGerbang = () => {
+    return useMutation<ResponseInputGerbang, Error, { id: number; IdCabang: number; NamaGerbang: string; NamaCabang: string }>({
+      mutationFn: ({ id, IdCabang, NamaCabang, NamaGerbang }) =>
+        createGerbang(id, IdCabang, NamaCabang, NamaGerbang),
+    });
+  };
+
+export const updateGerbang = async (
+  id: number,
+  IdCabang: number,
+  NamaGerbang: string,
+  NamaCabang: string
+): Promise<ResponseInputGerbang> => {
+  const response = await axios.post(`${BASE_URL}/gerbangs/${id}`, {
+    id,
+    IdCabang,
+    NamaCabang,
+    NamaGerbang,
+  });
+  return response.data;
+};
+
+export const deleteGerbang = async (
+  id: number,
+  IdCabang: number
+): Promise<ResponseInputGerbang> => {
+  const response = await axios.post(`${BASE_URL}/gerbangs`, {
+    id,
+    IdCabang,
+  });
+  return response.data;
+};
+
+
+export const useUpdateGerbang = () => {
+  return useMutation<
+    ResponseInputGerbang,
+    Error,
+    { id: number; IdCabang: number; NamaGerbang: string; NamaCabang: string }
+  >({
+    mutationFn: ({ id, IdCabang, NamaCabang, NamaGerbang }) =>
+      updateGerbang(id, IdCabang, NamaCabang, NamaGerbang),
+  });
+};
+
+export const useDeleteGerbang = () => {
+  return useMutation<
+    ResponseInputGerbang,
+    Error,
+    { id: number; IdCabang: number }
+  >({
+    mutationFn: ({ id, IdCabang }) => deleteGerbang(id, IdCabang),
+  });
+};
+
 export const fetchLalin = async (tanggal: string): Promise<lanlinResponse> => {
   const response = await axios.get(`${BASE_URL}/lalins?tanggal=${tanggal}`, {});
   return response.data;
 };
 
-export const useLalinData = (
-    tanggal: string
-) => {
+export const useLalinData = (tanggal: string) => {
   return useQuery<lanlinResponse, Error>({
     queryKey: ["pages", tanggal],
     queryFn: () => fetchLalin(tanggal),

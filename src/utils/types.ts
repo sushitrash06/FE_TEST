@@ -5,6 +5,20 @@ export interface TokenPayload {
   username: string;
 }
 
+export interface ResponseInputGerbang {
+  status: boolean;
+  message: string;
+  code: number;
+  id: {
+    id: number;
+    IdCabang: number;
+    NamaGerbang: string;
+    NamaCabang: string;
+    updatedAt: string;
+    createdAt: string;
+  };
+}
+
 export interface LoginResponse {
   status: true;
   message: string;

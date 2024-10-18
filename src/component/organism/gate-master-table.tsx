@@ -17,7 +17,11 @@ const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
   },
 }));
 
-const TableMasterGate: React.FC = () => {
+interface SearchI {
+    keyword: string
+}
+
+const TableMasterGate: React.FC<SearchI> = ({keyword}) => {
   const { data, isLoading, isError } = useGerbangs();
 
   const columns: GridColDef[] = [
@@ -64,10 +68,16 @@ const TableMasterGate: React.FC = () => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error fetching data</div>;
 
+  const filteredRows = data?.data?.rows?.rows.filter((row: any) => {
+    return (
+      row.NamaGerbang.toLowerCase().includes(keyword.toLowerCase()) || 
+      row.NamaCabang.toLowerCase().includes(keyword.toLowerCase())
+    );
+  }) || [];
   return (
     <div style={{ height: 600, width: "100%" }}>
       <StyledDataGrid
-        rows={data?.data?.rows?.rows || []} 
+        rows={filteredRows} 
         columns={columns}
         pagination
         autoPageSize

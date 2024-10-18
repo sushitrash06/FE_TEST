@@ -165,7 +165,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                                   to={subItem.path}
                                   className={({ isActive }) =>
                                     `group relative items-center rounded-lg font-medium text-[#001429] duration-300 ease-in-out hover:text-blue-900 ${
-                                      isActive ? "!text-whiten" : ""
+                                      isActive ? "!text-blue-900" : ""
                                     }`
                                   }
                                 >
