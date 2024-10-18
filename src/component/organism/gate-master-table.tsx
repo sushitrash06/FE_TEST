@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, Fragment } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { IconButton, styled } from "@mui/material";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete, MdOutlineRemoveRedEye } from "react-icons/md";
 import { useGerbangs } from "../../services";
+import { Dialog, Transition } from "@headlessui/react";
 
 const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
   '& .MuiDataGrid-columnHeaders': {
@@ -21,8 +22,12 @@ interface SearchI {
     keyword: string
 }
 
-const TableMasterGate: React.FC<SearchI> = ({keyword}) => {
+const TableMasterGate: React.FC<SearchI> = ({ keyword }) => {
   const { data, isLoading, isError } = useGerbangs();
+  
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDetailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 70 },
@@ -36,16 +41,13 @@ const TableMasterGate: React.FC<SearchI> = ({keyword}) => {
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <>
+          <IconButton onClick={() => handleView(params.row)} color="info">
+            <MdOutlineRemoveRedEye />
+          </IconButton>
           <IconButton onClick={() => handleEdit(params.row.IdCabang)} color="primary">
             <FaEdit />
           </IconButton>
-          <IconButton onClick={() => handleView(params.row.IdCabang)} color="info">
-            <MdOutlineRemoveRedEye />
-          </IconButton>
-          <IconButton
-            onClick={() => handleDelete(params.row.IdCabang)}
-            color="secondary"
-          >
+          <IconButton onClick={() => handleDelete(params.row)} color="secondary">
             <MdDelete />
           </IconButton>
         </>
@@ -57,15 +59,24 @@ const TableMasterGate: React.FC<SearchI> = ({keyword}) => {
     console.log("Edit item with id:", id);
   };
 
-  const handleView = (id: number) => {
-    console.log("View item with id:", id);
+  const handleView = (row: any) => {
+    setSelectedRow(row);
+    setDetailModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    console.log("Delete item with id:", id);
+  const handleDelete = (row: any) => {
+    setSelectedRow(row);
+    setDeleteModalOpen(true);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  const confirmDelete = () => {
+    console.log("Delete item with id:", selectedRow.IdCabang);
+    setDeleteModalOpen(false);
+    // Call your delete function here
+  };
+
+  if (isLoading) return<svg className="animate-spin h-5 w-5 mr-3 ..." viewBox="0 0 24 24">
+</svg>;
   if (isError) return <div>Error fetching data</div>;
 
   const filteredRows = data?.data?.rows?.rows.filter((row: any) => {
@@ -74,6 +85,7 @@ const TableMasterGate: React.FC<SearchI> = ({keyword}) => {
       row.NamaCabang.toLowerCase().includes(keyword.toLowerCase())
     );
   }) || [];
+
   return (
     <div style={{ height: 600, width: "100%" }}>
       <StyledDataGrid
@@ -83,6 +95,113 @@ const TableMasterGate: React.FC<SearchI> = ({keyword}) => {
         autoPageSize
         getRowId={(row) => row.IdCabang}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Transition appear show={isDeleteModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setDeleteModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-30" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-full p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md p-6 mx-auto bg-white rounded shadow-lg">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">
+                    Confirm Deletion
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <p>Are you sure you want to delete this item?</p>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <button 
+                      className="mr-2 text-gray-500"
+                      onClick={() => setDeleteModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
+                      onClick={confirmDelete}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Detail Modal */}
+      <Transition appear show={isDetailModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setDetailModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-30" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-full p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md p-6 mx-auto bg-white rounded shadow-lg">
+                  <Dialog.Title className="text-lg font-medium text-gray-900">
+                    Detail
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    {selectedRow && (
+                      <div>
+                        <p><strong>ID:</strong> {selectedRow.id}</p>
+                        <p><strong>Cabang ID:</strong> {selectedRow.IdCabang}</p>
+                        <p><strong>Nama Gerbang:</strong> {selectedRow.NamaGerbang}</p>
+                        <p><strong>Nama Cabang:</strong> {selectedRow.NamaCabang}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <button 
+                      className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                      onClick={() => setDetailModalOpen(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 };

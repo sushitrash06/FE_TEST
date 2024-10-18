@@ -1,7 +1,12 @@
 import React from 'react';
+import ReportTable from '../../component/organism/report-table';
 
 const Report: React.FC = () => {
-    return <h1>Home Page</h1>;
+    return (
+        <div>
+            <ReportTable />
+        </div>
+    )
 };
 
 export default Report;
