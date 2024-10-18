@@ -1,9 +1,9 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Input from "../atom/input";
 import Button from "../atom/button";
 import { Dialog, Transition } from "@headlessui/react";
-import { useCreateGerbang, useGerbangs } from "../../services";
+import { useCreateGerbang, useUpdateGerbang, useGerbangs } from "../../services";
 import { toast } from "react-toastify";
 import { IoMdClose } from "react-icons/io";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,32 +26,66 @@ const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen, initialValues }) => 
     register,
     handleSubmit,
     formState: { errors },
-    reset, // Added to reset the form
+    reset,
+    setValue, // Use setValue to programmatically set form values
   } = useForm<FormInputs>({
-    defaultValues: initialValues || { id: 0, IdCabang: 0, NamaGerbang: "", NamaCabang: "" }, // Set default values
+    defaultValues: { id: 0, IdCabang: 0, NamaGerbang: "", NamaCabang: "" },
   });
 
-  const { mutate, isPending } = useCreateGerbang();
+  const { mutate: createGerbang, isPending: isCreating } = useCreateGerbang();
+  const { mutate: updateGerbang, isPending: isUpdating } = useUpdateGerbang();
   const { refetch } = useGerbangs();
 
+  // Set default form values when initialValues is available
+  useEffect(() => {
+    if (initialValues) {
+      setValue("id", initialValues.id);
+      setValue("IdCabang", initialValues.IdCabang);
+      setValue("NamaGerbang", initialValues.NamaGerbang);
+      setValue("NamaCabang", initialValues.NamaCabang);
+    }
+  }, [initialValues, setValue]);
+
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    mutate(data, {
-      onSuccess: () => {
-        toast.success("Gerbang successfully created!", {
-          position: "top-left",
-          autoClose: 3000,
-        });
-        refetch();
-        setIsOpen(false);
-        reset(); // Reset form after successful submission
-      },
-      onError: (error) => {
-        toast.error(`ERROR: ${error.message || "An error occurred"}`, {
-          position: "top-left",
-          autoClose: 3000,
-        });
-      },
-    });
+    if (initialValues) {
+      // Edit mode: Call update mutation
+      updateGerbang(data, {
+        onSuccess: () => {
+          toast.success("Gerbang successfully updated!", {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          refetch();
+          setIsOpen(false);
+          reset();
+        },
+        onError: (error) => {
+          toast.error(`ERROR: ${error.message || "An error occurred"}`, {
+            position: "top-left",
+            autoClose: 3000,
+          });
+        },
+      });
+    } else {
+      // Create mode: Call create mutation
+      createGerbang(data, {
+        onSuccess: () => {
+          toast.success("Gerbang successfully created!", {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          refetch();
+          setIsOpen(false);
+          reset();
+        },
+        onError: (error) => {
+          toast.error(`ERROR: ${error.message || "An error occurred"}`, {
+            position: "top-left",
+            autoClose: 3000,
+          });
+        },
+      });
+    }
   };
 
   return (
@@ -101,7 +135,7 @@ const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen, initialValues }) => 
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-900"
                 >
-                  Tambah Gerbang
+                  {initialValues ? "Edit Gerbang" : "Tambah Gerbang"}
                 </Dialog.Title>
 
                 <div className="mt-4">
@@ -111,6 +145,7 @@ const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen, initialValues }) => 
                       type="number"
                       error={errors.id?.message}
                       {...register("id", { required: "ID is required" })}
+                      disabled={!!initialValues} // Disable ID field when editing
                     />
                     <Input
                       label="ID Cabang"
@@ -137,12 +172,12 @@ const GerbangForm: React.FC<TypeForm> = ({ show, setIsOpen, initialValues }) => 
                       })}
                     />
                     <Button
-                      isLoading={isPending}
+                      isLoading={isCreating || isUpdating}
                       type="submit"
-                      label="Submit"
+                      label={initialValues ? "Update" : "Submit"}
                       className="w-full flex items-center justify-center"
                       variant="primary"
-                      disabled={isPending} // Disable the button while loading
+                      disabled={isCreating || isUpdating} // Disable the button while loading
                     />
                   </form>
                 </div>

@@ -49,7 +49,7 @@ export const updateGerbang = async (
   NamaGerbang: string,
   NamaCabang: string
 ): Promise<ResponseInputGerbang> => {
-  const response = await axios.post(`${BASE_URL}/gerbangs/${id}`, {
+  const response = await axios.put(`${BASE_URL}/gerbangs`, {
     id,
     IdCabang,
     NamaCabang,
@@ -59,15 +59,24 @@ export const updateGerbang = async (
 };
 
 export const deleteGerbang = async (
-  id: number,
-  IdCabang: number
-): Promise<ResponseInputGerbang> => {
-  const response = await axios.post(`${BASE_URL}/gerbangs`, {
-    id,
-    IdCabang,
-  });
-  return response.data;
-};
+    id: number,
+    IdCabang: number
+  ): Promise<ResponseInputGerbang> => {
+    const response = await fetch(`${BASE_URL}/gerbangs/`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, IdCabang }), // Send the data in the body
+    });
+  
+    if (!response.ok) {
+      throw new Error('Error deleting gerbang');
+    }
+  
+    return response.json();
+  };
+  
 
 export const useDeleteGerbang = () => {
     return useMutation<
